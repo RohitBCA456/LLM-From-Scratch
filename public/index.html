@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Translation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+        }
+        .debug {
+            background-color: #fff3cd;
+            border-left-color: #ffc107;
+            color: #856404;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LLM Translation Test</h1>
+        
+        <div style="background: #e3f2fd; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
+            <strong>⚠️ Important:</strong> Make sure you're accessing this page through <code>http://localhost:3000</code> (not Live Server). 
+            The API endpoints only work when served by the Node.js server.
+        </div>
+        
+        <div class="form-group">
+            <label for="text">Text to translate:</label>
+            <textarea id="text" placeholder="Enter text to translate...">Hello, how are you today?</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="language">Target Language:</label>
+            <select id="language">
+                <option value="Italian">Italian</option>
+                <option value="Spanish">Spanish</option>
+                <option value="French">French</option>
+                <option value="German">German</option>
+                <option value="Portuguese">Portuguese</option>
+                <option value="Japanese">Japanese</option>
+                <option value="Chinese">Chinese</option>
+                <option value="Korean">Korean</option>
+            </select>
+        </div>
+        
+        <button id="translateBtn">Translate</button>
+        <button id="testBtn">Test LLM</button>
+        
+        <div id="result"></div>
+        <div id="debug"></div>
+    </div>
+
+    <script>
+        // Debug function to show information
+        function showDebug(message) {
+            const debugDiv = document.getElementById('debug');
+            const timestamp = new Date().toLocaleTimeString();
+            debugDiv.innerHTML += `<div class="debug">[${timestamp}] ${message}</div>`;
+            console.log(message);
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // showDebug('Page loaded successfully');
+            // showDebug('Current URL: ' + window.location.href);
+            
+            // Add event listeners instead of onclick
+            document.getElementById('translateBtn').addEventListener('click', translate);
+            document.getElementById('testBtn').addEventListener('click', testLLM);
+            
+            // showDebug('Event listeners attached');
+        });
+
+        async function translate() {
+            showDebug('Translate function called');
+            
+            const text = document.getElementById('text').value;
+            const language = document.getElementById('language').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!text.trim()) {
+                resultDiv.innerHTML = '<div class="result error">Please enter some text to translate.</div>';
+                showDebug('No text entered');
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="result loading">Translating...</div>';
+            showDebug('Starting translation request');
+            
+            const apiUrl = window.location.origin + '/translate';
+            showDebug('Calling API at: ' + apiUrl);
+            
+            try {
+                const response = await fetch('/translate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text, targetLanguage: language })
+                });
+                
+                showDebug('Response status: ' + response.status);
+                
+                const data = await response.json();
+                showDebug('Response data received');
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <h3>Translation Result:</h3>
+                            <p><strong>Original:</strong> ${data.original}</p>
+                            <p><strong>Translated (${data.targetLanguage}):</strong> ${data.translated}</p>
+                        </div>
+                    `;
+                    showDebug('Translation successful');
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">Error: ${data.error}</div>`;
+                    showDebug('Translation failed: ' + data.error);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">Network error: ${error.message}</div>`;
+                showDebug('Network error: ' + error.message);
+            }
+        }
+        
+        async function testLLM() {
+            showDebug('Test LLM function called');
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="result loading">Testing LLM...</div>';
+            
+            const apiUrl = window.location.origin + '/test';
+            showDebug('Calling API at: ' + apiUrl);
+            
+            try {
+                const response = await fetch('/test');
+                showDebug('Response status: ' + response.status);
+                
+                const data = await response.json();
+                showDebug('Response data received');
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <h3>LLM Test Result:</h3>
+                            <p><strong>Response:</strong> ${data.message}</p>
+                        </div>
+                    `;
+                    showDebug('LLM test successful');
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">Error: ${data.error}</div>`;
+                    showDebug('LLM test failed: ' + data.error);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">Network error: ${error.message}</div>`;
+                showDebug('Network error: ' + error.message);
+            }
+        }
+
+        // Make functions globally available (fallback)
+        window.translate = translate;
+        window.testLLM = testLLM;
+        
+        // showDebug('Functions made globally available');
+    </script>
+</body>
+</html>
