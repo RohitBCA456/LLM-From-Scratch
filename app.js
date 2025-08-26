@@ -33,7 +33,7 @@ app.post("/translate", async (req, res) => {
     }
 
     // Create the system instruction
-    const systemTemplate = `Translate the following from English into {targetLanguage}`;
+    const systemTemplate = `Translate the following from English into {language}`;
 
     // Create the prompt template
     const promptTemplate = ChatPromptTemplate.fromMessages([
@@ -42,15 +42,15 @@ app.post("/translate", async (req, res) => {
     ]);
 
     // Fill the template with the actual text
-    const formattedMessages = await promptTemplate.formatMessages({
-      targetLanguage,
-      text,
+    const promptValue = await promptTemplate.invoke({
+      language: targetLanguage,
+      text: text,
     });
 
-    console.log("Formatted Messages:", formattedMessages);
+    console.log("Prompt Value:", promptValue.toChatMessages());
 
-    // Call the LLM with formatted messages
-    const response = await model.invoke(formattedMessages);
+    // Call the LLM with the prompt value
+    const response = await model.invoke(promptValue);
 
     res.json({
       original: text,
