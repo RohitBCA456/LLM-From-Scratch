@@ -33,7 +33,7 @@ app.post("/translate", async (req, res) => {
     }
 
     // Create the system instruction
-    const systemTemplate = `Translate the following from English into ${targetLanguage}`;
+    const systemTemplate = `Translate the following from English into {targetLanguage}`;
 
     // Create the prompt template
     const promptTemplate = ChatPromptTemplate.fromMessages([
@@ -43,6 +43,7 @@ app.post("/translate", async (req, res) => {
 
     // Fill the template with the actual text
     const formattedMessages = await promptTemplate.formatMessages({
+      targetLanguage,
       text,
     });
 
@@ -74,7 +75,7 @@ app.get("/test", async (req, res) => {
       new HumanMessage("Say hello"),
     ];
 
-    const response = await model.invoke([{ role: "user", content: messages }]);
+    const response = await model.invoke(messages);
     //     const stream = await model.stream(messages);
 
     //     const chunks = [];
