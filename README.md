@@ -86,4 +86,4 @@ Content-Type: application/json
 - `@langchain/google-genai` - Google AI integration
 - `@langchain/core` - LangChain core functionality
 - `dotenv` - Environment variable management
-- `@langchain/core/prompts` - Build prompt templates"# LLM-From-Scratch" 
+- `@langchain/core/prompts` - Build prompt templates"
